@@ -76,8 +76,10 @@ describe('Markora shell', () => {
 
     await user.type(screen.getByPlaceholderText('Search files'), 'research')
 
-    expect(screen.getByText('Research.md')).toBeInTheDocument()
-    expect(screen.queryByText('Daily Notes.md')).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('Research.md')).toBeInTheDocument()
+      expect(screen.queryByText('Daily Notes.md')).not.toBeInTheDocument()
+    })
   })
 
   it('exports the active document from the toolbar', async () => {
