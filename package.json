@@ -11,11 +11,11 @@
     "postinstall": "node scripts/patch-electron-get-cache-mode.mjs",
     "dev": "vite --host 127.0.0.1",
     "electron:dev": "cross-env NODE_ENV=development vite --host 127.0.0.1",
-    "build": "tsc -b && vite build && electron-builder --dir",
+    "build": "tsc -b && vite build && electron-builder --dir --publish never",
     "build:renderer": "tsc -b && vite build",
-    "dist:mac": "pnpm build:renderer && electron-builder --mac dmg pkg",
-    "dist:win": "pnpm build:renderer && electron-builder --win nsis msi --x64",
-    "dist:win:nsis": "pnpm build:renderer && electron-builder --win nsis --x64",
+    "dist:mac": "pnpm build:renderer && electron-builder --mac dmg pkg --publish never",
+    "dist:win": "pnpm build:renderer && electron-builder --win nsis msi --x64 --publish never",
+    "dist:win:nsis": "pnpm build:renderer && electron-builder --win nsis --x64 --publish never",
     "lint": "eslint .",
     "preview": "vite preview --host 127.0.0.1",
     "test": "vitest run",
@@ -34,12 +34,14 @@
     ],
     "mac": {
       "category": "public.app-category.productivity",
+      "icon": "build/icon.icns",
       "target": [
         "dmg",
         "pkg"
       ]
     },
     "win": {
+      "icon": "build/icon.ico",
       "target": [
         "nsis",
         "msi"
