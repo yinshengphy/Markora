@@ -1,0 +1,114 @@
+{
+  "name": "markora",
+  "private": true,
+  "version": "0.1.0",
+  "description": "A Typora-inspired WYSIWYG Markdown editor built with Electron, React, TypeScript, and Tiptap.",
+  "author": "Markora Contributors",
+  "type": "module",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "preinstall": "node scripts/configure-registry.mjs",
+    "postinstall": "node scripts/patch-electron-get-cache-mode.mjs",
+    "dev": "vite --host 127.0.0.1",
+    "electron:dev": "cross-env NODE_ENV=development vite --host 127.0.0.1",
+    "build": "tsc -b && vite build && electron-builder --dir",
+    "build:renderer": "tsc -b && vite build",
+    "dist:mac": "pnpm build:renderer && electron-builder --mac dmg pkg",
+    "dist:win": "pnpm build:renderer && electron-builder --win nsis msi --x64",
+    "dist:win:nsis": "pnpm build:renderer && electron-builder --win nsis --x64",
+    "lint": "eslint .",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "vitest run",
+    "test:ui": "vitest --environment jsdom"
+  },
+  "build": {
+    "appId": "com.markora.editor",
+    "productName": "Markora",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist",
+      "dist-electron",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        "dmg",
+        "pkg"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "msi"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "dependencies": {
+    "@tiptap/core": "^3.26.1",
+    "@tiptap/extension-code-block-lowlight": "^3.26.1",
+    "@tiptap/extension-image": "^3.26.1",
+    "@tiptap/extension-link": "^3.26.1",
+    "@tiptap/extension-placeholder": "^3.26.1",
+    "@tiptap/extension-table": "^3.26.1",
+    "@tiptap/extension-table-cell": "^3.26.1",
+    "@tiptap/extension-table-header": "^3.26.1",
+    "@tiptap/extension-table-row": "^3.26.1",
+    "@tiptap/extension-task-item": "^3.26.1",
+    "@tiptap/extension-task-list": "^3.26.1",
+    "@tiptap/extension-typography": "^3.26.1",
+    "@tiptap/react": "^3.26.1",
+    "@tiptap/starter-kit": "^3.26.1",
+    "clsx": "^2.1.1",
+    "highlight.js": "^11.11.1",
+    "katex": "^0.17.0",
+    "lowlight": "^3.3.0",
+    "lucide-react": "^1.18.0",
+    "markdown-it": "^14.2.0",
+    "markdown-it-anchor": "^9.2.0",
+    "markdown-it-attrs": "^5.0.0",
+    "markdown-it-container": "^4.0.0",
+    "markdown-it-footnote": "^4.0.0",
+    "markdown-it-task-lists": "^2.1.1",
+    "mermaid": "^11.15.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "turndown": "^7.2.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/markdown-it": "^14.1.2",
+    "@types/markdown-it-container": "^4.0.0",
+    "@types/markdown-it-footnote": "^3.0.4",
+    "@types/node": "^24.12.3",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@types/turndown": "^5.0.6",
+    "@vitejs/plugin-react": "^6.0.1",
+    "concurrently": "^10.0.3",
+    "cross-env": "^10.1.0",
+    "electron": "^42.4.0",
+    "electron-builder": "^26.15.3",
+    "eslint": "^10.3.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.6.0",
+    "jsdom": "^29.1.1",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.59.2",
+    "vite": "^8.0.12",
+    "vite-plugin-electron": "^1.0.4",
+    "vite-plugin-electron-renderer": "^1.0.0",
+    "vitest": "^4.1.8",
+    "wait-on": "^9.0.10"
+  }
+}

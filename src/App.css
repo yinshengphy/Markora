@@ -1,0 +1,440 @@
+.markora-shell {
+  --app-bg: #ffffff;
+  --panel-bg: #f7f7f7;
+  --panel-muted: #efefef;
+  --border: #dedede;
+  --text: #333333;
+  --muted: #777777;
+  --heading: #111111;
+  --accent: #4b7bec;
+  --page-width: 720px;
+  display: grid;
+  grid-template-rows: 38px 1fr 24px;
+  height: 100vh;
+  color: var(--text);
+  background: var(--app-bg);
+}
+
+.theme-newsprint {
+  --app-bg: #fbfaf4;
+  --panel-bg: #f1efe6;
+  --panel-muted: #e8e4d8;
+  --border: #d9d2c1;
+  --text: #3d392f;
+  --muted: #817866;
+  --heading: #242119;
+  --accent: #8c6f3f;
+}
+
+.theme-night {
+  --app-bg: #1f1f1f;
+  --panel-bg: #282828;
+  --panel-muted: #333333;
+  --border: #3c3c3c;
+  --text: #d4d4d4;
+  --muted: #8d8d8d;
+  --heading: #f1f1f1;
+  --accent: #76a9ff;
+}
+
+.titlebar {
+  -webkit-app-region: drag;
+  display: grid;
+  grid-template-columns: 92px 1fr auto;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel-bg);
+  user-select: none;
+}
+
+.document-title {
+  justify-self: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.toolbar {
+  -webkit-app-region: no-drag;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-right: 8px;
+}
+
+button {
+  font: inherit;
+}
+
+.toolbar button {
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+}
+
+.toolbar button:hover {
+  color: var(--heading);
+  background: var(--panel-muted);
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  min-height: 0;
+}
+
+.sidebar,
+.outline {
+  width: 220px;
+  min-width: 220px;
+  overflow: auto;
+  color: var(--muted);
+  background: var(--panel-bg);
+  border-right: 1px solid var(--border);
+}
+
+.outline {
+  width: 230px;
+  border-right: 0;
+  border-left: 1px solid var(--border);
+}
+
+.is-focus .sidebar,
+.is-focus .outline,
+.is-focus .statusbar,
+.is-focus .toolbar {
+  display: none;
+}
+
+.is-focus .workspace {
+  grid-template-columns: 1fr;
+}
+
+.sidebar-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  margin: 12px;
+  padding: 0 10px;
+  color: var(--muted);
+  background: var(--app-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.sidebar-search input {
+  width: 100%;
+  min-width: 0;
+  color: var(--text);
+  background: transparent;
+  border: 0;
+  outline: none;
+  font: inherit;
+}
+
+.sidebar-search input::placeholder {
+  color: var(--muted);
+}
+
+.sidebar-section,
+.outline {
+  padding: 10px;
+}
+
+.sidebar-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.file-row,
+.outline-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 30px;
+  padding: 0 8px;
+  color: var(--text);
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.file-row span,
+.outline-row {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-row:hover,
+.outline-row:hover,
+.file-row.active {
+  background: var(--panel-muted);
+}
+
+.editor-wrap {
+  position: relative;
+  overflow: auto;
+  min-width: 0;
+  background: var(--app-bg);
+}
+
+.table-tools {
+  position: sticky;
+  top: 10px;
+  z-index: 5;
+  display: flex;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  margin: 10px auto -48px;
+  padding: 4px;
+  gap: 2px;
+  color: var(--muted);
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+}
+
+.table-tools button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 26px;
+  padding: 0 8px;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.table-tools button:hover {
+  color: var(--heading);
+  background: var(--panel-muted);
+}
+
+.drop-hint {
+  position: sticky;
+  top: 12px;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  margin: 12px auto -42px;
+  padding: 4px 8px;
+  color: var(--muted);
+  opacity: 0;
+  pointer-events: none;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 12px;
+  transition: opacity 0.15s ease;
+}
+
+.editor-wrap:hover .drop-hint {
+  opacity: 0.72;
+}
+
+.markora-page {
+  width: min(var(--page-width), calc(100vw - 96px));
+  min-height: calc(100vh - 112px);
+  margin: 0 auto;
+  padding: 72px 0 96px;
+  outline: none;
+  color: var(--text);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 18px;
+  line-height: 1.68;
+}
+
+.markora-page h1,
+.markora-page h2,
+.markora-page h3,
+.markora-page h4,
+.markora-page h5,
+.markora-page h6 {
+  color: var(--heading);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 1.35em 0 0.55em;
+}
+
+.markora-page h1 {
+  padding-bottom: 0.25em;
+  border-bottom: 1px solid var(--border);
+  font-size: 2.1em;
+}
+
+.markora-page h2 {
+  font-size: 1.55em;
+}
+
+.markora-page h3 {
+  font-size: 1.2em;
+}
+
+.markora-page p,
+.markora-page ul,
+.markora-page ol,
+.markora-page blockquote,
+.markora-page pre,
+.markora-page table {
+  margin: 0.72em 0;
+}
+
+.markora-page code {
+  padding: 0.12em 0.35em;
+  border-radius: 3px;
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  font-size: 0.88em;
+  background: var(--panel-muted);
+}
+
+.markora-page pre {
+  padding: 14px 16px;
+  overflow: auto;
+  border-radius: 4px;
+  background: var(--panel-muted);
+}
+
+.markora-page blockquote {
+  margin-left: 0;
+  padding-left: 16px;
+  color: var(--muted);
+  border-left: 4px solid var(--border);
+}
+
+.markora-page blockquote p:first-child {
+  margin-top: 0;
+}
+
+.markora-page blockquote p:first-child:has(strong:first-child),
+.markora-page blockquote p:first-child:has(code:first-child) {
+  color: var(--heading);
+}
+
+.markora-page a {
+  color: var(--accent);
+}
+
+.markora-page table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.markora-page th,
+.markora-page td {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+}
+
+.markora-page img {
+  display: block;
+  max-width: 100%;
+  margin: 1em auto;
+}
+
+.markora-page ul[data-type='taskList'] {
+  padding-left: 0;
+  list-style: none;
+}
+
+.markora-page li[data-type='taskItem'] {
+  display: flex;
+  gap: 8px;
+}
+
+.markora-page li[data-type='taskItem'] label {
+  flex: 0 0 auto;
+  margin-top: 0.2em;
+}
+
+.markora-yaml {
+  color: var(--muted);
+  border: 1px solid var(--border);
+  background: var(--panel-bg);
+}
+
+.markora-diagram {
+  margin: 1.2em 0;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel-bg);
+}
+
+.markora-diagram::before {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 12px;
+  text-transform: uppercase;
+  content: attr(data-language);
+}
+
+.markora-diagram pre {
+  margin: 0;
+}
+
+.markora-diagram .diagram-render + pre {
+  display: none;
+}
+
+.diagram-render svg {
+  display: block;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.markora-page .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.4em 0;
+}
+
+.source-editor {
+  display: block;
+  width: min(var(--page-width), calc(100vw - 96px));
+  min-height: calc(100vh - 112px);
+  margin: 0 auto;
+  padding: 72px 0 96px;
+  color: var(--text);
+  background: transparent;
+  border: 0;
+  outline: none;
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  font-size: 15px;
+  line-height: 1.7;
+  resize: none;
+}
+
+.statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 18px;
+  padding: 0 12px;
+  color: var(--muted);
+  background: var(--panel-bg);
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+}

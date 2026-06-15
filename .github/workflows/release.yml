@@ -1,0 +1,95 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag, for example v0.1.0
+        required: true
+        default: v0.1.0
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            command: pnpm dist:mac
+            artifact: release-macos
+            files: |
+              release/*.dmg
+              release/*.pkg
+          - os: windows-latest
+            command: pnpm dist:win
+            artifact: release-windows
+            files: |
+              release/*.exe
+              release/*.msi
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.0.7
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Configure npm mirror
+        run: pnpm config set registry https://registry.npmmirror.com/
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
+
+      - name: Verify
+        run: |
+          pnpm lint
+          pnpm test
+
+      - name: Build installers
+        run: ${{ matrix.command }}
+        env:
+          ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.files }}
+          if-no-files-found: error
+
+  publish:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag }}
+          name: Markora ${{ inputs.tag }}
+          body: |
+            Markora desktop preview release.
+
+            Included assets:
+            - macOS DMG and PKG installers
+            - Windows NSIS EXE and MSI installers
+
+            Validation:
+            - lint
+            - unit tests
+            - electron-builder packaging
+          files: artifacts/**/*
