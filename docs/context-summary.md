@@ -1,41 +1,46 @@
-# Markora Context Summary
+# Markora 上下文摘要
 
-Last updated: 2026-06-16
+最后更新：2026-06-16
 
-## Goal
+## 目标
 
-Build Markora, a Typora-faithful Markdown editor clone using Electron, React, TypeScript, Vite, Tiptap/ProseMirror, KaTeX, Mermaid, and electron-builder. The final target is a standard open-source project with Windows and macOS installers and a GitHub Release.
+构建 Markora：一个尽可能忠实于 Typora 的 Markdown 编辑器克隆，技术栈为 Electron、React、TypeScript、Vite、Tiptap/ProseMirror、KaTeX、Mermaid 和 electron-builder。最终目标是形成标准开源项目，提供 Windows 和 macOS 安装包，并发布到 GitHub Release。
 
-## Current State
+## 当前状态
 
-- Phase 1 is complete: Electron/Vite/React/TypeScript scaffold, Typora-like titlebar, sidebar, outline, editor area, status bar, menus, themes, and packaging config.
-- Phase 2 is complete: WYSIWYG Markdown editing, Markdown import/export conversion, source code mode, YAML front matter, task lists, KaTeX inline/block math, Mermaid rendering, PlantUML placeholder, and custom Tiptap NodeViews.
-- Phase 3 is partially complete: file open/save/save-as, workspace folder scan, sidebar file filtering, image paste/drop/import, table insertion, contextual table controls, and dirty-state title updates.
-- The repository has a `.git` directory but most files are still untracked.
+- 阶段 1 已完成：Electron/Vite/React/TypeScript 脚手架、类 Typora 标题栏、侧边栏、大纲、编辑区、状态栏、菜单、主题和打包配置。
+- 阶段 2 已完成：WYSIWYG Markdown 编辑、Markdown 导入/导出转换、Source Code Mode、YAML Front Matter、任务列表、KaTeX 行内/块级公式、Mermaid 渲染、PlantUML 占位和自定义 Tiptap NodeView。
+- 阶段 3 已部分完成：打开/保存/另存为、工作区文件夹扫描、侧边栏文件过滤、图片粘贴/拖放/导入、表格插入、上下文表格工具和脏状态标题更新。
+- 阶段 4 已部分完成：HTML/PDF/兼容 Word 的 `.doc` 导出、更多菜单命令、更多快捷键入口和视图 polish。
+- 阶段 5 已完成首轮打包链路：本地 macOS ARM64 DMG/PKG 可生成，GitHub Actions 可生成 macOS 与 Windows Release 资产。
+- 阶段 6 已完成首轮开源发布：仓库已推送到 GitHub，并创建 `v0.1.0` Release。
 
-## Validation Already Passing
+## 已通过验证
 
 - `pnpm lint`
 - `pnpm test`
 - `pnpm build:renderer`
+- `pnpm dist:mac`
+- GitHub Actions 发布工作流
 
-## Important Commands
+## 重要命令
 
-- Install registry mirror: `npm config set registry https://registry.npmmirror.com/`
-- Install dependencies: `pnpm install`
-- Run app UI: `pnpm dev`
-- Renderer build: `pnpm build:renderer`
-- macOS package: `pnpm dist:mac`
-- Windows package: `pnpm dist:win`
+- 设置 registry 镜像：`pnpm config set registry https://registry.npmmirror.com/`
+- 安装依赖：`pnpm install`
+- 启动开发界面：`pnpm dev`
+- 构建渲染进程：`pnpm build:renderer`
+- 生成 macOS 安装包：`pnpm dist:mac`
+- 生成 Windows 安装包：`pnpm dist:win`
 
-If Electron download stalls, retry with:
+如果 Electron 下载卡住，可重试：
 
 ```sh
 ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ pnpm exec install-electron --no
 ```
 
-## Remaining Work
+## 后续工作
 
-- Finish Phase 4: real HTML/PDF/Word export, shortcut coverage, theme fidelity, focus/Zen polish, and manual consistency notes.
-- Finish Phase 5: generate and verify macOS and Windows installers where the host environment allows it.
-- Finish Phase 6: standardize open-source docs, initialize commits, create/push GitHub repository, create Release, and upload installer assets. GitHub publishing may require user authentication if no usable token/session exists.
+- 继续提升 Typora 忠实度：光标边界行为、Markdown 输入快捷展开、表格浮层、图片路径策略、偏好设置和完整快捷键矩阵。
+- 补充真正的 `.docx` 导出、PlantUML 渲染服务和更完整的文件树操作。
+- 为 macOS/Windows 增加正式代码签名与公证。
+- 扩展自动化测试，加入更系统的 Typora 对比用例。

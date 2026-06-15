@@ -1,51 +1,51 @@
-# Phase 3 Report: File Management And Advanced Editing
+# 阶段 3 报告：文件管理与高级编辑
 
-Date: 2026-06-16
+日期：2026-06-16
 
-## Completed
+## 已完成
 
-- Added Electron IPC for opening Markdown files.
-- Added Electron IPC for opening folders and recursively listing Markdown-like files.
-- Added Electron IPC for reading selected workspace files.
-- Added Save As support through the same Markdown save path.
-- Added image paste/drop support in the editor.
-- Added Electron asset import support that copies dropped image files into an `assets/` folder next to the current document when a filesystem path is available.
-- Added a real searchable file sidebar backed by workspace file entries.
-- Added toolbar actions for opening files, opening folders, saving, inserting tables, toggling panels, focus mode, and source mode.
-- Added a table insertion action and contextual table editing controls for rows, columns, and table deletion.
-- Prevented initial editor hydration from marking a document dirty.
+- 添加用于打开 Markdown 文件的 Electron IPC。
+- 添加用于打开文件夹并递归列出类 Markdown 文件的 Electron IPC。
+- 添加用于读取选中工作区文件的 Electron IPC。
+- 通过同一 Markdown 保存路径支持另存为。
+- 在编辑器中添加图片粘贴/拖放支持。
+- 添加 Electron 资源导入能力：当可获得文件系统路径时，将拖入图片复制到当前文档旁边的 `assets/` 文件夹。
+- 添加真实可搜索的文件侧边栏，由工作区文件条目驱动。
+- 添加工具栏动作：打开文件、打开文件夹、保存、插入表格、切换面板、专注模式和 Source Code Mode。
+- 添加表格插入动作，以及用于行、列、删除表格的上下文表格编辑控件。
+- 防止编辑器初始 hydration 将文档标记为已修改。
 
-## Verification
+## 验证
 
-- `pnpm lint`: passed.
-- `pnpm test`: passed, 2 files and 7 tests.
-- `pnpm build:renderer`: passed.
-- Browser verification at `http://127.0.0.1:5173/`: passed.
+- `pnpm lint`：通过。
+- `pnpm test`：通过，2 个文件、7 个测试。
+- `pnpm build:renderer`：通过。
+- 浏览器验证 `http://127.0.0.1:5173/`：通过。
 
-Observed browser evidence:
+浏览器观察结果：
 
-- Initial document title was `Welcome.md`, not dirty.
-- Search input was present in the file sidebar.
-- Open Folder and Insert Table toolbar buttons were present.
-- Default sample workspace files rendered in the sidebar.
-- Inserting a table created a table and surfaced table tools.
-- Inserting a table correctly marked the document dirty.
-- No browser console errors.
+- 初始文档标题为 `Welcome.md`，不是脏状态。
+- 文件侧边栏中存在搜索输入框。
+- 工具栏中存在 Open Folder 和 Insert Table 按钮。
+- 默认示例工作区文件显示在侧边栏中。
+- 插入表格会创建表格并显示表格工具。
+- 插入表格会正确将文档标记为已修改。
+- 浏览器控制台无错误。
 
-## Typora Fidelity Notes
+## Typora 忠实度说明
 
-- Improved: file sidebar now models a real workspace instead of static demo items.
-- Improved: table creation and table-specific controls are present.
-- Improved: image paste/drop now inserts images, and desktop drops can be copied to an `assets/` folder.
-- Still incomplete: tree hierarchy folding, file create/rename/delete, robust image relative path rewriting for all save modes, table selection handles, exact Typora table popovers, and file watcher refresh.
+- 改进：文件侧边栏现在模拟真实工作区，而不是静态演示项目。
+- 改进：具备表格创建和表格专用控件。
+- 改进：图片粘贴/拖放现在会插入图片，桌面拖放可复制到 `assets/` 文件夹。
+- 仍未完成：树形层级折叠、文件创建/重命名/删除、在所有保存模式下稳健重写图片相对路径、表格选择手柄、精确 Typora 表格浮层和文件监听刷新。
 
-## Next Phase
+## 下一阶段
 
-Continue Phase 3 or enter Phase 4 depending on priority:
+根据优先级继续阶段 3 或进入阶段 4：
 
-- Add hierarchical folder tree with disclosure controls.
-- Add file create, rename, delete, reveal in Finder.
-- Add image path policy preferences.
-- Add table cell alignment and row/column selection affordances.
-- Add export to HTML/PDF/Word.
-- Expand keyboard shortcut parity tests.
+- 添加带展开控件的层级文件夹树。
+- 添加文件创建、重命名、删除和在 Finder 中显示。
+- 添加图片路径策略偏好设置。
+- 添加表格单元格对齐和行/列选择入口。
+- 添加 HTML/PDF/Word 导出。
+- 扩展键盘快捷键一致性测试。

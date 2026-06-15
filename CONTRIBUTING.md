@@ -1,8 +1,8 @@
-# Contributing
+# 贡献指南
 
-Thanks for helping improve Markora.
+感谢你帮助改进 Markora。
 
-## Development Setup
+## 开发环境
 
 ```bash
 pnpm config set registry https://registry.npmmirror.com/
@@ -10,15 +10,15 @@ pnpm install
 pnpm dev
 ```
 
-If Electron binary download is slow:
+如果 Electron 二进制下载缓慢：
 
 ```bash
 ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ pnpm exec install-electron --no
 ```
 
-## Quality Checks
+## 质量检查
 
-Run these before opening a pull request:
+提交 Pull Request 前请运行：
 
 ```bash
 pnpm lint
@@ -26,20 +26,20 @@ pnpm test
 pnpm build:renderer
 ```
 
-## Pull Request Guidelines
+## Pull Request 规范
 
-- Keep changes scoped to one behavior or feature area.
-- Preserve Typora-like interaction details wherever possible.
-- Add focused tests for Markdown conversion, editor commands, IPC behavior, or UI flows touched by the change.
-- Update `docs/phase-reports/` when a staged goal changes materially.
-- Avoid unrelated formatting churn.
+- 每次改动尽量聚焦在一个行为或功能区域。
+- 尽可能保留并强化 Typora 风格的交互细节。
+- 如果改动影响 Markdown 转换、编辑器命令、IPC 行为或 UI 流程，请添加有针对性的测试。
+- 当阶段目标有实质变化时，更新 `docs/phase-reports/`。
+- 避免无关的格式化改动。
 
-## Typora Fidelity Notes
+## Typora 忠实度检查
 
-When changing editor behavior, compare against Typora in these areas:
+修改编辑行为时，请重点和 Typora 对比以下方面：
 
-- Cursor movement before and after rendered Markdown nodes.
-- Markdown shortcut expansion while typing.
-- Rendered spacing, typography, and table behavior.
-- Menu labels and shortcut conventions.
-- Source Code Mode round-trip output.
+- 渲染节点前后的光标移动。
+- 输入时 Markdown 快捷语法的展开行为。
+- 渲染后的间距、排版和表格行为。
+- 菜单名称和快捷键习惯。
+- Source Code Mode 往返后的 Markdown 输出。
