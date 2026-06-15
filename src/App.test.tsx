@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import App from './App'
@@ -71,10 +71,9 @@ describe('Markora shell', () => {
 
   it('filters the workspace file list', async () => {
     installMarkoraMock()
-    const user = userEvent.setup()
     render(<App />)
 
-    await user.type(screen.getByPlaceholderText('Search files'), 'research')
+    fireEvent.change(screen.getByPlaceholderText('Search files'), { target: { value: 'research' } })
 
     await waitFor(() => {
       expect(screen.getByText('Research.md')).toBeInTheDocument()
