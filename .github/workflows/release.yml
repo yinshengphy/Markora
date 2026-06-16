@@ -1,18 +1,17 @@
 name: Release
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
-    inputs:
-      tag:
-        description: Release tag, for example v0.1.0
-        required: true
-        default: v0.1.0
 
 permissions:
   contents: write
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  TEST_RELEASE_TAG: test-build
 
 jobs:
   build:
@@ -72,27 +71,42 @@ jobs:
           if-no-files-found: error
 
   publish:
-    name: Publish GitHub Release
+    name: Publish GitHub test release
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
 
+      - name: Move test release tag
+        run: |
+          git tag -f "$TEST_RELEASE_TAG" "$GITHUB_SHA"
+          git push origin "$TEST_RELEASE_TAG" --force
+
       - uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ inputs.tag }}
-          name: Markora ${{ inputs.tag }}
+          tag_name: ${{ env.TEST_RELEASE_TAG }}
+          name: Markora Test Build
+          prerelease: true
+          make_latest: true
           body: |
-            Markora desktop preview release.
+            Markora 滚动测试构建。
 
-            Included assets:
-            - macOS DMG and PKG installers
-            - Windows NSIS EXE and MSI installers
+            此 Release 会由 GitHub Actions 基于 main 分支最新提交自动重新打包和更新。
 
-            Validation:
+            提交：${{ github.sha }}
+
+            包含资产：
+            - macOS DMG 和 PKG 安装包
+            - Windows NSIS EXE 和 MSI 安装包
+
+            验证：
             - lint
-            - unit tests
-            - electron-builder packaging
+            - 单元测试
+            - electron-builder 打包
           files: artifacts/**/*
