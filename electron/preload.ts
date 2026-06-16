@@ -73,6 +73,9 @@ const api = {
       ipcRenderer.removeListener('workspace-opened', listener)
     }
   },
+  newDocument: () => ipcRenderer.invoke('new-document') as Promise<void>,
+  closeDocument: () => ipcRenderer.invoke('close-document') as Promise<void>,
+  closeWindow: () => ipcRenderer.invoke('close-window') as Promise<void>,
   openMarkdownFile: () => ipcRenderer.invoke('open-markdown-file') as Promise<OpenedMarkdownFile | null>,
   openWorkspace: () => ipcRenderer.invoke('open-workspace') as Promise<OpenedWorkspace | null>,
   readWorkspaceFile: (path: string) => ipcRenderer.invoke('read-workspace-file', path) as Promise<OpenedMarkdownFile | null>,

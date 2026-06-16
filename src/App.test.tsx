@@ -8,6 +8,9 @@ const installMarkoraMock = () => {
     onMenuAction: vi.fn(() => undefined),
     onFileOpened: vi.fn(() => undefined),
     onWorkspaceOpened: vi.fn(() => undefined),
+    newDocument: vi.fn(async () => undefined),
+    closeDocument: vi.fn(async () => undefined),
+    closeWindow: vi.fn(async () => undefined),
     openMarkdownFile: vi.fn(async () => null),
     openWorkspace: vi.fn(async () => null),
     readWorkspaceFile: vi.fn(async () => null),
@@ -60,6 +63,44 @@ describe('Markora shell', () => {
     expect(window.markora?.onMenuAction).toHaveBeenCalledOnce()
     expect(window.markora?.onFileOpened).toHaveBeenCalledOnce()
     expect(window.markora?.onWorkspaceOpened).toHaveBeenCalledOnce()
+  })
+
+  it('starts a true untitled document through the main process before saving', async () => {
+    installMarkoraMock()
+    render(<App />)
+
+    const onMenuAction = window.markora?.onMenuAction as unknown as { mock: { calls: Array<[(action: string) => void]> } }
+    onMenuAction.mock.calls[0][0]('new')
+
+    await waitFor(() => {
+      expect(window.markora?.newDocument).toHaveBeenCalledOnce()
+      expect(screen.getByText('Untitled.md')).toBeInTheDocument()
+    })
+  })
+
+  it('closes the active document from the File menu action', async () => {
+    installMarkoraMock()
+    render(<App />)
+
+    const onMenuAction = window.markora?.onMenuAction as unknown as { mock: { calls: Array<[(action: string) => void]> } }
+    onMenuAction.mock.calls[0][0]('close-document')
+
+    await waitFor(() => {
+      expect(window.markora?.closeDocument).toHaveBeenCalledOnce()
+      expect(screen.getByText('Untitled.md')).toBeInTheDocument()
+    })
+  })
+
+  it('routes Close Window through the active renderer process', async () => {
+    installMarkoraMock()
+    render(<App />)
+
+    const onMenuAction = window.markora?.onMenuAction as unknown as { mock: { calls: Array<[(action: string) => void]> } }
+    onMenuAction.mock.calls[0][0]('close-window')
+
+    await waitFor(() => {
+      expect(window.markora?.closeWindow).toHaveBeenCalledOnce()
+    })
   })
 
   it('switches to real Markdown source mode', async () => {

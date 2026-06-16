@@ -35,12 +35,13 @@ const createWindow = async () => {
     height: 780,
     minWidth: 860,
     minHeight: 560,
+    show: false,
     title: 'Untitled - Markora',
     titleBarStyle: 'hiddenInset',
     trafficLightPosition: { x: 14, y: 13 },
     backgroundColor: nativeTheme.shouldUseDarkColors ? '#1f1f1f' : '#ffffff',
     webPreferences: {
-      preload: fileURLToPath(new URL('./preload.mjs', import.meta.url)),
+      preload: fileURLToPath(new URL('./preload.cjs', import.meta.url)),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
@@ -52,12 +53,25 @@ const createWindow = async () => {
     return { action: 'deny' }
   })
 
+  mainWindow.once('ready-to-show', () => {
+    mainWindow?.show()
+    mainWindow?.focus()
+  })
+
+  mainWindow.on('closed', () => {
+    mainWindow = null
+    currentFilePath = null
+  })
+
   if (process.env.VITE_DEV_SERVER_URL) {
     await mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL)
     mainWindow.webContents.openDevTools({ mode: 'detach' })
   } else {
     await mainWindow.loadFile('dist/index.html')
   }
+
+  if (!mainWindow.isVisible()) mainWindow.show()
+  mainWindow.focus()
 }
 
 const sendMenuAction = (action: string) => {
@@ -67,6 +81,24 @@ const sendMenuAction = (action: string) => {
 const updateTitle = (filePath: string | null, dirty = false) => {
   const name = filePath ? basename(filePath) : 'Untitled'
   mainWindow?.setTitle(`${dirty ? '*' : ''}${name} - Markora`)
+}
+
+const newDocument = async () => {
+  currentFilePath = null
+  updateTitle(null)
+}
+
+const closeDocument = async () => {
+  currentFilePath = null
+  updateTitle(null)
+}
+
+const closeWindow = async () => {
+  if (process.platform === 'darwin') {
+    app.hide()
+    return
+  }
+  BrowserWindow.getAllWindows()[0]?.close()
 }
 
 const readWorkspaceMarkdownFiles = async (workspacePath: string) => {
@@ -143,6 +175,7 @@ const openMarkdownFile = async () => {
   if (result.canceled || !result.filePaths[0]) return
   currentFilePath = result.filePaths[0]
   currentWorkspacePath = dirname(currentFilePath)
+  app.addRecentDocument(currentFilePath)
   const markdown = await readFile(currentFilePath, 'utf8')
   updateTitle(currentFilePath)
   const payload = {
@@ -267,6 +300,7 @@ const saveMarkdownFile = async (_event: Electron.IpcMainInvokeEvent, markdown: s
   }
 
   await writeFile(currentFilePath, markdown, 'utf8')
+  app.addRecentDocument(currentFilePath)
   updateTitle(currentFilePath)
   return { path: currentFilePath, name: basename(currentFilePath) }
 }
@@ -443,12 +477,36 @@ const exportDocument = async (_event: Electron.IpcMainInvokeEvent, payload: Expo
 
 const buildMenu = () => {
   const template: Electron.MenuItemConstructorOptions[] = [
+    ...(process.platform === 'darwin'
+      ? [{
+          label: app.name,
+          submenu: [
+            { role: 'about' as const },
+            { type: 'separator' as const },
+            { role: 'services' as const },
+            { type: 'separator' as const },
+            { role: 'hide' as const },
+            { role: 'hideOthers' as const },
+            { role: 'unhide' as const },
+            { type: 'separator' as const },
+            { role: 'quit' as const },
+          ],
+        }]
+      : []),
     {
       label: 'File',
       submenu: [
+        { label: 'New Window', accelerator: 'CmdOrCtrl+Shift+N', click: () => void createWindow() },
         { label: 'New', accelerator: 'CmdOrCtrl+N', click: () => sendMenuAction('new') },
         { label: 'Open...', accelerator: 'CmdOrCtrl+O', click: () => void openMarkdownFile() },
         { label: 'Open Folder...', accelerator: 'CmdOrCtrl+Shift+O', click: () => void openWorkspace() },
+        {
+          label: 'Open Recent',
+          role: 'recentDocuments',
+          submenu: [
+            { role: 'clearRecentDocuments' },
+          ],
+        },
         { label: 'Refresh File Tree', accelerator: 'CmdOrCtrl+R', click: () => void refreshWorkspace().then((workspace) => workspace && mainWindow?.webContents.send('workspace-opened', workspace)) },
         { label: 'Save', accelerator: 'CmdOrCtrl+S', click: () => sendMenuAction('save') },
         { label: 'Save As...', accelerator: 'CmdOrCtrl+Shift+S', click: () => sendMenuAction('save-as') },
@@ -463,7 +521,9 @@ const buildMenu = () => {
           ],
         },
         { type: 'separator' },
-        { role: 'quit' },
+        { label: 'Close Document', accelerator: 'CmdOrCtrl+Shift+W', click: () => sendMenuAction('close-document') },
+        { label: 'Close', accelerator: 'CmdOrCtrl+W', click: () => void closeWindow() },
+        ...(process.platform === 'darwin' ? [] : [{ role: 'quit' as const }]),
       ],
     },
     {
@@ -544,6 +604,9 @@ const buildMenu = () => {
 }
 
 app.whenReady().then(() => {
+  ipcMain.handle('new-document', newDocument)
+  ipcMain.handle('close-document', closeDocument)
+  ipcMain.handle('close-window', closeWindow)
   ipcMain.handle('open-markdown-file', openMarkdownFile)
   ipcMain.handle('open-workspace', openWorkspace)
   ipcMain.handle('read-workspace-file', readWorkspaceFile)
@@ -564,5 +627,11 @@ app.on('window-all-closed', () => {
 })
 
 app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) void createWindow()
+  const windows = BrowserWindow.getAllWindows()
+  if (windows.length === 0) {
+    void createWindow()
+    return
+  }
+  windows[0].show()
+  windows[0].focus()
 })

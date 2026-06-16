@@ -264,6 +264,7 @@ function App() {
       const chain = editor.chain().focus()
       const actions: Record<string, () => void> = {
         new: () => {
+          void window.markora?.newDocument?.()
           editorReady.current = false
           editor.commands.setContent('')
           queueMicrotask(() => {
@@ -275,6 +276,20 @@ function App() {
           setDirty(false)
           window.markora?.setDocumentDirty(false)
         },
+        'close-document': () => {
+          void window.markora?.closeDocument?.()
+          editorReady.current = false
+          editor.commands.setContent('')
+          queueMicrotask(() => {
+            editorReady.current = true
+          })
+          setSourceMarkdown('')
+          setDocumentName('Untitled.md')
+          setActiveFilePath('')
+          setDirty(false)
+          window.markora?.setDocumentDirty(false)
+        },
+        'close-window': () => void window.markora?.closeWindow?.(),
         save: () => void saveDocument(),
         'save-as': () => {
           const markdown = currentMarkdown()
