@@ -15,6 +15,8 @@ export type WorkspaceFileEntry = {
   path: string
   name: string
   relativePath: string
+  type?: 'file' | 'directory'
+  children?: WorkspaceFileEntry[]
 }
 
 export type OpenedWorkspace = {
@@ -29,7 +31,7 @@ export type ImportedAsset = {
   name: string
 }
 
-export type ExportFormat = 'html' | 'pdf' | 'doc'
+export type ExportFormat = 'html' | 'pdf' | 'doc' | 'docx'
 
 export type ExportPayload = {
   format: ExportFormat
@@ -43,6 +45,10 @@ export type ExportedDocument = {
   path: string
   name: string
   format: ExportFormat
+}
+
+export type WorkspaceMutationResult = OpenedWorkspace & {
+  activeFile?: OpenedMarkdownFile
 }
 
 const api = {
@@ -70,6 +76,13 @@ const api = {
   openMarkdownFile: () => ipcRenderer.invoke('open-markdown-file') as Promise<OpenedMarkdownFile | null>,
   openWorkspace: () => ipcRenderer.invoke('open-workspace') as Promise<OpenedWorkspace | null>,
   readWorkspaceFile: (path: string) => ipcRenderer.invoke('read-workspace-file', path) as Promise<OpenedMarkdownFile | null>,
+  refreshWorkspace: () => ipcRenderer.invoke('refresh-workspace') as Promise<OpenedWorkspace | null>,
+  createWorkspaceEntry: (kind: 'file' | 'directory', name: string) =>
+    ipcRenderer.invoke('create-workspace-entry', kind, name) as Promise<WorkspaceMutationResult | null>,
+  renameWorkspaceEntry: (path: string, name: string) =>
+    ipcRenderer.invoke('rename-workspace-entry', path, name) as Promise<WorkspaceMutationResult | null>,
+  deleteWorkspaceEntry: (path: string) =>
+    ipcRenderer.invoke('delete-workspace-entry', path) as Promise<WorkspaceMutationResult | null>,
   saveMarkdown: (markdown: string, saveAs?: boolean) => ipcRenderer.invoke('save-markdown', markdown, saveAs) as Promise<SavedMarkdownFile | null>,
   importAsset: (path: string) => ipcRenderer.invoke('import-asset', path) as Promise<ImportedAsset | null>,
   exportDocument: (payload: ExportPayload) => ipcRenderer.invoke('export-document', payload) as Promise<ExportedDocument | null>,

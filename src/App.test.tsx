@@ -11,6 +11,10 @@ const installMarkoraMock = () => {
     openMarkdownFile: vi.fn(async () => null),
     openWorkspace: vi.fn(async () => null),
     readWorkspaceFile: vi.fn(async () => null),
+    refreshWorkspace: vi.fn(async () => null),
+    createWorkspaceEntry: vi.fn(async () => null),
+    renameWorkspaceEntry: vi.fn(async () => null),
+    deleteWorkspaceEntry: vi.fn(async () => null),
     saveMarkdown: vi.fn(async () => ({ name: 'Welcome.md', path: '/tmp/Welcome.md' })),
     importAsset: vi.fn(async () => null),
     exportDocument: vi.fn(async () => ({ name: 'Welcome.pdf', path: '/tmp/Welcome.pdf', format: 'pdf' })),
@@ -79,6 +83,25 @@ describe('Markora shell', () => {
       expect(screen.getByText('Research.md')).toBeInTheDocument()
       expect(screen.queryByText('Daily Notes.md')).not.toBeInTheDocument()
     })
+  })
+
+  it('opens the find and replace panel and replaces literal Markdown text', async () => {
+    installMarkoraMock()
+    const user = userEvent.setup()
+    const { container } = render(<App />)
+
+    await user.click(screen.getByTitle('Source Code Mode'))
+    await user.click(screen.getByTitle('Source Code Mode'))
+    const onMenuAction = window.markora?.onMenuAction as unknown as { mock: { calls: Array<[(action: string) => void]> } }
+    onMenuAction.mock.calls[0][0]('find')
+
+    await waitFor(() => expect(screen.getByPlaceholderText('Find')).toBeInTheDocument())
+    await user.type(screen.getByPlaceholderText('Find'), 'Markora')
+    await user.type(screen.getByPlaceholderText('Replace'), 'Markora Test')
+    await user.click(screen.getByText('Replace All'))
+    await user.click(screen.getByTitle('Source Code Mode'))
+
+    expect((container.querySelector('.source-editor') as HTMLTextAreaElement).value).toContain('Markora Test')
   })
 
   it('exports the active document from the toolbar', async () => {

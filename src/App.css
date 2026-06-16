@@ -142,6 +142,28 @@ button {
   color: var(--muted);
 }
 
+.file-actions {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 3px;
+  margin: -4px 12px 8px;
+}
+
+.file-actions button {
+  display: grid;
+  height: 26px;
+  place-items: center;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+}
+
+.file-actions button:hover {
+  color: var(--heading);
+  background: var(--panel-muted);
+}
+
 .sidebar-section,
 .outline {
   padding: 10px;
@@ -180,6 +202,10 @@ button {
   white-space: nowrap;
 }
 
+.file-tree-item {
+  min-width: 0;
+}
+
 .file-row:hover,
 .outline-row:hover,
 .file-row.active {
@@ -191,6 +217,67 @@ button {
   overflow: auto;
   min-width: 0;
   background: var(--app-bg);
+}
+
+.find-panel {
+  position: sticky;
+  top: 10px;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  margin: 10px auto -48px;
+  padding: 4px;
+  gap: 4px;
+  color: var(--muted);
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 8%);
+}
+
+.find-panel label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 8px;
+  background: var(--app-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.find-panel input {
+  width: 128px;
+  min-width: 0;
+  color: var(--text);
+  background: transparent;
+  border: 0;
+  outline: none;
+  font: inherit;
+  font-size: 12px;
+}
+
+.find-panel span {
+  padding: 0 6px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.find-panel button {
+  height: 26px;
+  padding: 0 8px;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.find-panel button:hover {
+  color: var(--heading);
+  background: var(--panel-muted);
 }
 
 .table-tools {

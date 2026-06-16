@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
@@ -12,10 +13,14 @@ import TableHeader from '@tiptap/extension-table-header'
 import TableCell from '@tiptap/extension-table-cell'
 import {
   BookOpen,
+  ChevronDown,
+  ChevronRight,
   Code2,
   Columns3,
   FileText,
+  FilePlus,
   Focus,
+  FolderPlus,
   FolderOpen,
   Hash,
   ImagePlus,
@@ -25,6 +30,9 @@ import {
   Rows3,
   Save,
   Search,
+  Pencil,
+  RefreshCw,
+  Replace,
   Table2,
   Trash2,
 } from 'lucide-react'
@@ -41,10 +49,10 @@ type OutlineDoc = {
 }
 
 const defaultFiles: WorkspaceFileEntry[] = [
-  { name: 'Welcome.md', path: 'welcome.md', relativePath: 'Welcome.md' },
-  { name: 'Daily Notes.md', path: 'daily-notes.md', relativePath: 'Daily Notes.md' },
-  { name: 'Research.md', path: 'research.md', relativePath: 'Research.md' },
-  { name: 'Export Checklist.md', path: 'export-checklist.md', relativePath: 'Export Checklist.md' },
+  { name: 'Welcome.md', path: 'welcome.md', relativePath: 'Welcome.md', type: 'file' },
+  { name: 'Daily Notes.md', path: 'daily-notes.md', relativePath: 'Daily Notes.md', type: 'file' },
+  { name: 'Research.md', path: 'research.md', relativePath: 'Research.md', type: 'file' },
+  { name: 'Export Checklist.md', path: 'export-checklist.md', relativePath: 'Export Checklist.md', type: 'file' },
 ]
 
 const collectOutline = (doc: OutlineDoc) => {
@@ -56,6 +64,30 @@ const collectOutline = (doc: OutlineDoc) => {
   })
   return headings
 }
+
+const flattenWorkspaceFiles = (entries: WorkspaceFileEntry[]): WorkspaceFileEntry[] =>
+  entries.flatMap((entry) => (entry.type === 'directory' ? flattenWorkspaceFiles(entry.children ?? []) : [entry]))
+
+const filterWorkspaceEntries = (entries: WorkspaceFileEntry[], query: string): WorkspaceFileEntry[] => {
+  const normalizedQuery = query.trim().toLowerCase()
+  if (!normalizedQuery) return entries
+
+  return entries.flatMap((entry) => {
+    const children = entry.children ? filterWorkspaceEntries(entry.children, query) : []
+    if (entry.relativePath.toLowerCase().includes(normalizedQuery) || children.length) {
+      return [{ ...entry, children }]
+    }
+    return []
+  })
+}
+
+const countMatches = (source: string, query: string) => {
+  if (!query) return 0
+  return source.toLowerCase().split(query.toLowerCase()).length - 1
+}
+
+const replaceAllLiteral = (source: string, query: string, replacement: string) =>
+  query ? source.replaceAll(query, replacement) : source
 
 const exportCss = `
 body {
@@ -119,6 +151,10 @@ function App() {
   const [workspaceName, setWorkspaceName] = useState('Sample Workspace')
   const [workspaceFiles, setWorkspaceFiles] = useState<WorkspaceFileEntry[]>(defaultFiles)
   const [fileSearch, setFileSearch] = useState('')
+  const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set())
+  const [findPanelOpen, setFindPanelOpen] = useState(false)
+  const [findQuery, setFindQuery] = useState('')
+  const [replaceText, setReplaceText] = useState('')
   const [dirty, setDirty] = useState(false)
   const [outline, setOutline] = useState<OutlineHeading[]>([])
   const editorReady = useRef(false)
@@ -126,7 +162,8 @@ function App() {
   const openWorkspace = useCallback((workspace: OpenedWorkspace) => {
     setWorkspaceName(workspace.name)
     setWorkspaceFiles(workspace.files)
-    if (workspace.files[0]) setActiveFilePath(workspace.files[0].path)
+    const firstFile = flattenWorkspaceFiles(workspace.files)[0]
+    if (firstFile) setActiveFilePath(firstFile.path)
   }, [])
 
   const editor = useEditor({
@@ -184,9 +221,21 @@ function App() {
     window.markora?.setDocumentDirty(false)
   }, [editor])
 
+  const currentMarkdown = useCallback(() => {
+    if (!editor) return sourceMarkdown
+    return sourceMode ? sourceMarkdown : htmlToMarkdown(editor.getHTML())
+  }, [editor, sourceMarkdown, sourceMode])
+
+  const applyWorkspaceMutation = useCallback((result: Awaited<ReturnType<NonNullable<typeof window.markora>['createWorkspaceEntry']>> | null) => {
+    if (!result) return
+    setWorkspaceName(result.name)
+    setWorkspaceFiles(result.files)
+    if (result.activeFile) openDocument(result.activeFile)
+  }, [openDocument])
+
   const saveDocument = useCallback(async () => {
     if (!editor) return
-    const markdown = sourceMode ? sourceMarkdown : htmlToMarkdown(editor.getHTML())
+    const markdown = currentMarkdown()
     const result = await window.markora?.saveMarkdown(markdown)
     if (result) {
       setDocumentName(result.name)
@@ -194,11 +243,11 @@ function App() {
       setDirty(false)
       window.markora?.setDocumentDirty(false)
     }
-  }, [editor, sourceMarkdown, sourceMode])
+  }, [currentMarkdown, editor])
 
   const exportDocument = useCallback(async (format: ExportFormat) => {
     if (!editor) return
-    const markdown = sourceMode ? sourceMarkdown : htmlToMarkdown(editor.getHTML())
+    const markdown = currentMarkdown()
     const html = sourceMode ? markdownToHtml(sourceMarkdown) : editor.getHTML()
     await window.markora?.exportDocument({
       format,
@@ -207,7 +256,7 @@ function App() {
       html,
       css: exportCss,
     })
-  }, [documentName, editor, sourceMarkdown, sourceMode])
+  }, [currentMarkdown, documentName, editor, sourceMarkdown, sourceMode])
 
   const runAction = useCallback(
     (action: string) => {
@@ -228,7 +277,7 @@ function App() {
         },
         save: () => void saveDocument(),
         'save-as': () => {
-          const markdown = sourceMode ? sourceMarkdown : htmlToMarkdown(editor.getHTML())
+          const markdown = currentMarkdown()
           void window.markora?.saveMarkdown(markdown, true).then((result) => {
             if (!result) return
             setDocumentName(result.name)
@@ -240,6 +289,7 @@ function App() {
         'export-html': () => void exportDocument('html'),
         'export-pdf': () => void exportDocument('pdf'),
         'export-doc': () => void exportDocument('doc'),
+        'export-docx': () => void exportDocument('docx'),
         'toggle-bold': () => chain.toggleBold().run(),
         'toggle-italic': () => chain.toggleItalic().run(),
         'toggle-strike': () => chain.toggleStrike().run(),
@@ -276,13 +326,15 @@ function App() {
           }
           setSourceMode(nextSourceMode)
         },
+        find: () => setFindPanelOpen(true),
+        replace: () => setFindPanelOpen(true),
         'theme-github': () => setTheme('github'),
         'theme-newsprint': () => setTheme('newsprint'),
         'theme-night': () => setTheme('night'),
       }
       actions[action]?.()
     },
-    [editor, exportDocument, saveDocument, sourceMarkdown, sourceMode],
+    [currentMarkdown, editor, exportDocument, saveDocument, sourceMarkdown, sourceMode],
   )
 
   useEffect(() => {
@@ -296,9 +348,10 @@ function App() {
     }
   }, [openDocument, openWorkspace, runAction])
 
-  const filteredFiles = workspaceFiles.filter((file) => file.relativePath.toLowerCase().includes(fileSearch.toLowerCase()))
+  const filteredFiles = filterWorkspaceEntries(workspaceFiles, fileSearch)
 
   const openFileFromSidebar = async (file: WorkspaceFileEntry) => {
+    if (file.type === 'directory') return
     if (!window.markora?.readWorkspaceFile || file.path === 'welcome.md') {
       setDocumentName(file.name)
       setActiveFilePath(file.path)
@@ -317,6 +370,73 @@ function App() {
     if (opened) openDocument(opened)
   }
 
+  const refreshWorkspace = async () => {
+    const workspace = await window.markora?.refreshWorkspace?.()
+    if (workspace) openWorkspace(workspace)
+  }
+
+  const createWorkspaceEntry = async (kind: 'file' | 'directory') => {
+    const label = kind === 'file' ? 'New Markdown file' : 'New folder'
+    const name = window.prompt(label, kind === 'file' ? 'Untitled.md' : 'New Folder')
+    if (!name) return
+    applyWorkspaceMutation(await window.markora?.createWorkspaceEntry?.(kind, name) ?? null)
+  }
+
+  const renameActiveEntry = async () => {
+    const active = flattenWorkspaceFiles(workspaceFiles).find((file) => file.path === activeFilePath)
+    if (!active) return
+    const name = window.prompt('Rename file', active.name)
+    if (!name || name === active.name) return
+    applyWorkspaceMutation(await window.markora?.renameWorkspaceEntry?.(active.path, name) ?? null)
+  }
+
+  const deleteActiveEntry = async () => {
+    const active = flattenWorkspaceFiles(workspaceFiles).find((file) => file.path === activeFilePath)
+    if (!active || !window.confirm(`Delete ${active.name}?`)) return
+    applyWorkspaceMutation(await window.markora?.deleteWorkspaceEntry?.(active.path) ?? null)
+  }
+
+  const toggleFolder = (path: string) => {
+    setCollapsedFolders((current) => {
+      const next = new Set(current)
+      if (next.has(path)) next.delete(path)
+      else next.add(path)
+      return next
+    })
+  }
+
+  const applyReplaceAll = () => {
+    if (!findQuery) return
+    const nextMarkdown = replaceAllLiteral(currentMarkdown(), findQuery, replaceText)
+    setSourceMarkdown(nextMarkdown)
+    editorReady.current = false
+    editor?.commands.setContent(markdownToHtml(nextMarkdown))
+    queueMicrotask(() => {
+      editorReady.current = true
+    })
+    setDirty(true)
+    window.markora?.setDocumentDirty(true)
+  }
+
+  const renderWorkspaceEntry = (file: WorkspaceFileEntry, depth = 0): ReactNode => {
+    const isDirectory = file.type === 'directory'
+    const collapsed = collapsedFolders.has(file.path)
+    return (
+      <div className="file-tree-item" key={file.path}>
+        <button
+          className={file.path === activeFilePath ? 'file-row active' : 'file-row'}
+          style={{ paddingLeft: `${8 + depth * 14}px` }}
+          type="button"
+          onClick={() => (isDirectory ? toggleFolder(file.path) : void openFileFromSidebar(file))}
+        >
+          {isDirectory ? (collapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />) : <FileText size={14} />}
+          <span>{file.name}</span>
+        </button>
+        {isDirectory && !collapsed && file.children?.map((child) => renderWorkspaceEntry(child, depth + 1))}
+      </div>
+    )
+  }
+
   const insertImageFiles = async (files: FileList | File[]) => {
     const images = imageFilesFromList(files)
     for (const image of images) {
@@ -332,6 +452,8 @@ function App() {
       editor?.chain().focus().setImage({ src: source, alt: image.name }).run()
     }
   }
+
+  const findMatches = countMatches(currentMarkdown(), findQuery)
 
   return (
     <main className={`markora-shell theme-${theme} ${focusMode ? 'is-focus' : ''}`}>
@@ -358,14 +480,16 @@ function App() {
               <Search size={14} />
               <input value={fileSearch} onChange={(event) => setFileSearch(event.target.value)} placeholder="Search files" />
             </label>
+            <div className="file-actions" aria-label="File actions">
+              <button title="New file" type="button" onClick={() => void createWorkspaceEntry('file')}><FilePlus size={14} /></button>
+              <button title="New folder" type="button" onClick={() => void createWorkspaceEntry('directory')}><FolderPlus size={14} /></button>
+              <button title="Rename active file" type="button" onClick={() => void renameActiveEntry()}><Pencil size={14} /></button>
+              <button title="Delete active file" type="button" onClick={() => void deleteActiveEntry()}><Trash2 size={14} /></button>
+              <button title="Refresh file tree" type="button" onClick={() => void refreshWorkspace()}><RefreshCw size={14} /></button>
+            </div>
             <div className="sidebar-section">
               <div className="sidebar-heading"><BookOpen size={14} /> {workspaceName}</div>
-              {filteredFiles.map((file) => (
-                <button className={file.path === activeFilePath ? 'file-row active' : 'file-row'} type="button" key={file.path} onClick={() => void openFileFromSidebar(file)}>
-                  <FileText size={14} />
-                  <span>{file.relativePath}</span>
-                </button>
-              ))}
+              {filteredFiles.map((file) => renderWorkspaceEntry(file))}
             </div>
           </aside>
         )}
@@ -385,6 +509,21 @@ function App() {
             if (!sourceMode) event.preventDefault()
           }}
         >
+          {findPanelOpen && (
+            <div className="find-panel" role="search">
+              <label>
+                <Search size={14} />
+                <input value={findQuery} onChange={(event) => setFindQuery(event.target.value)} placeholder="Find" autoFocus />
+              </label>
+              <label>
+                <Replace size={14} />
+                <input value={replaceText} onChange={(event) => setReplaceText(event.target.value)} placeholder="Replace" />
+              </label>
+              <span>{findMatches} matches</span>
+              <button type="button" onClick={applyReplaceAll}>Replace All</button>
+              <button type="button" onClick={() => setFindPanelOpen(false)}>Close</button>
+            </div>
+          )}
           {!sourceMode && editor?.isActive('table') && (
             <div className="table-tools" aria-label="Table editing tools">
               <button type="button" title="Add row" onClick={() => runAction('add-row')}><Rows3 size={14} /></button>
